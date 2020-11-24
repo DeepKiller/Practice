@@ -27,13 +27,16 @@ class Testing(TestCase):
         test = Client()
         response = test.post('/usercontrol/registration',{'Email':'a@a.a','Password':'CpRm9Cg8mNSFzFt'})
         response = test.post('/usercontrol/login',{'Email':'a@a.a','Password':'CpRm9Cg8mNSFzFt'})
-        response = test.delete('/usercontrol/delete',{'id':'1'})
+        response = test.delete('/usercontrol/delete',{'Email':'a@a.a'})
         if not response.status_code==200:
             self.fail(response.content)
     
     def GetTest(self):
         test = Client()
         response = test.post('/usercontrol/registration',{'Email':'a@a.a','Password':'CpRm9Cg8mNSFzFt'})
+        response = test.post('/usercontrol/registration',{'Email':'b@a.a','Password':'CpRm9Cg8mNSFzFt'})
+        response = test.post('/usercontrol/registration',{'Email':'c@a.a','Password':'CpRm9Cg8mNSFzFt'})
+        response = test.post('/usercontrol/registration',{'Email':'d@a.a','Password':'CpRm9Cg8mNSFzFt'})
         response = test.post('/usercontrol/login',{'Email':'a@a.a','Password':'CpRm9Cg8mNSFzFt'})
         response = test.get('/usercontrol/view',{'page':'1'})
         if not response.status_code==200:

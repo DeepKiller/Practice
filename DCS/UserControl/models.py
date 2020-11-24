@@ -3,9 +3,17 @@ from django.contrib.auth.models import AbstractBaseUser,BaseUserManager
 from django.utils import timezone
 # Create your models here.
 class UserManager(BaseUserManager):
-    def get_by_natural_key(self,username):
-        return User.objects.filter(Email=username)
+    def get_by_natural_key(self,Email):
+        """
+        Description: Получение пользователя по email.
+        Args: Email - email пользователя.
+        """
+        return User.objects.filter(Email=Email)
     def create_user(self,Email,Password):
+        """
+        Description: Создаёт и возвращает нового пользователя.
+        Args: Email - email для нового пользователя, Password - пароль для нового пользователя.
+        """
         timezone.activate("Europe/Moscow")
         user=self.model(Email=Email,Password=Password,DateCreated=timezone.now(),DateUpdated=timezone.now())
         user.save()
@@ -29,6 +37,10 @@ class User(AbstractBaseUser):
         
     @property
     def IsAdmin(self):
+        """
+        Description: Свойство отображающее является ли пользователь администратором.
+        Args: None.
+        """
         if self.Role == "Admin":
             return True
         return False

@@ -12,8 +12,15 @@ from django.core.paginator import Paginator,PageNotAnInteger,EmptyPage
 
 @require_http_methods(['POST'])
 def Registration(request):
-    Email = request.POST.get('Email')
-    Password = password=request.POST.get('Password')
+    """
+    Description: Проверяет корректность полученных в запросе данных(email,пароль), при корректности регистрирует нового пользователя.
+    Args: request - запрос от клиента с методом POST содержащий в себе Email и Password.
+    """
+    try:
+        Email = request.POST.get('Email')
+        Password = password=request.POST.get('Password')
+    except:
+        return HttpRequest('Bad request',status=400)
     ValidPass,Error=CheckPassword(Password)
     if ValidPass:
         if  CheckMail(Email):
@@ -25,6 +32,10 @@ def Registration(request):
         return HttpResponse("Wrong password: " + Error.messages[0])
 
 def CheckMail(email):
+    """
+    Description: Проверяет строку на соответствие шаблону, и наличие в базе данных.
+    Args: email - строка для проверки.
+    """
     if match(r"\w+@\w+.\w+",email):
         DBEmail = User.objects.filter(Email=email)
         if not DBEmail:
@@ -32,6 +43,10 @@ def CheckMail(email):
     return False
 
 def CheckPassword(password):
+    """
+    Description: Проверка строки стандартным обработчиком валидации паролей.
+    Args: password - строка для проверки.
+    """
     try:
         validate_password(password)
         return (True,None)
@@ -40,30 +55,45 @@ def CheckPassword(password):
 
 @require_http_methods(['POST'])
 def Login(request):
-    user = authenticate(username=request.POST.get('Email'),password=request.POST.get('Password'))
+    """
+    Description: Производит аутентификацию пользователя с помощью полученных в запросе данных(email,пароль), после аутентификации регистрирует новую сессию пользователя.
+    Args: request - запрос от клиента с методом POST содержащий в себе Email и Password.
+    """
+    try:
+        user = authenticate(username=request.POST.get('Email'),password=request.POST.get('Password'))
+    except:
+        return HttpResponse('Bad request', status=400)
     if not user==None:
         user_logged_in.disconnect(update_last_login, dispatch_uid='update_last_login')
         login(request,user)
         return HttpResponse("Login")
     else:
-        return HttpResponse("Login failed",status=401)
+        return HttpResponse("Login failed", status=401)
 
 @require_http_methods(['DELETE'])    
 def DeleteUser(request):
+    """
+    Description: Удаляет пользователя с помощью полученных в запросе данных.
+    Args: request - запрос от клиента с методом DELETE содержащий в себе Email.
+    """
     if request.user.is_authenticated:
         if request.user.IsAdmin:
             data = json.loads(request.read().decode("UTF-8").replace('\'','\"'))
-            User.objects.get(id=data['id']).delete()
+            User.objects.get(Email=data['Email']).delete()
             return HttpResponse("Deleted")
         else: 
-            return HttpResponse("No permision",status=403)
+            return HttpResponse("No permision", status=403)
     else:
-        return HttpResponse("Not logged in",status=401)
+        return HttpResponse("Not logged in", status=401)
 
 @require_http_methods(['GET'])
 def ViewUsers(request):
+    """
+    Description: Отображает список пользователей на указанной странице.
+    Args: request - запрос от клиента с методом GET содержащий в себе page (номер необходимой страницы).
+    """
     if request.user.is_authenticated:
-        if not request.user.IsAdmin:
+        if request.user.IsAdmin:
             users = User.objects.all().order_by('id')
             paginator = Paginator(users,15)
             try:
@@ -72,7 +102,7 @@ def ViewUsers(request):
                 return HttpResponse("Page not an integer",status=400)
             except EmptyPage:
                 return HttpResponse("Empty page",status=400)
-            return HttpResponse(page)
+            return HttpResponse(page.object_list)
         else: 
             return HttpResponse("No permision",status=403)
     else:
