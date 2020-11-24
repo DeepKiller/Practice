@@ -3,13 +3,6 @@ from django.http import HttpRequest
 
 # Create your tests here.
 class Testing(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        pass
-
-    def setUp(self):
-        pass
-
     def RegTest(self):
         test = Client()
         response = test.post('/usercontrol/registration',{'Email':'b@b.b','Password':'NcafBfdnsB2'})

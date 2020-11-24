@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
-from django.http import HttpResponse,HttpRequest
+from django.http import HttpResponse
 from django.contrib.auth.password_validation import validate_password,ValidationError
 from django.contrib.auth import authenticate,login
 from django.contrib.auth.signals import user_logged_in
