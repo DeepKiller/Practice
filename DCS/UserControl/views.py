@@ -1,6 +1,7 @@
 from django.shortcuts import render
+from django.core import serializers
 from django.views.decorators.http import require_http_methods
-from django.http import HttpResponse
+from django.http import HttpResponse,JsonResponse
 from django.contrib.auth.password_validation import validate_password,ValidationError
 from django.contrib.auth import authenticate,login
 from django.contrib.auth.signals import user_logged_in
@@ -17,10 +18,11 @@ def Registration(request):
     Args: request - запрос от клиента с методом POST содержащий в себе Email и Password.
     """
     try:
-        Email = request.POST.get('Email')
-        Password = password=request.POST.get('Password')
+        data = json.loads(request.body)
+        Email = data['Email']
+        Password = data['Password']
     except:
-        return HttpRequest('Bad request',status=400)
+        return HttpResponse('Bad request',status=400)
     ValidPass,Error=CheckPassword(Password)
     if ValidPass:
         if  CheckMail(Email):
@@ -60,7 +62,8 @@ def Login(request):
     Args: request - запрос от клиента с методом POST содержащий в себе Email и Password.
     """
     try:
-        user = authenticate(username=request.POST.get('Email'),password=request.POST.get('Password'))
+        data = json.loads(request.body)
+        user = authenticate(username=data['Email'],password=data['Password'])
     except:
         return HttpResponse('Bad request', status=400)
     if not user==None:
@@ -78,7 +81,7 @@ def DeleteUser(request):
     """
     if request.user.is_authenticated:
         if request.user.IsAdmin:
-            data = json.loads(request.read().decode("UTF-8").replace('\'','\"'))
+            data = json.loads(request.body)
             User.objects.get(Email=data['Email']).delete()
             return HttpResponse("Deleted")
         else: 
@@ -97,12 +100,16 @@ def ViewUsers(request):
             users = User.objects.all().order_by('id')
             paginator = Paginator(users,15)
             try:
-                page = paginator.page(request.GET.get('page'))
+                data = json.loads(request.body)
+                page = paginator.page(data['page'])
             except PageNotAnInteger:
                 return HttpResponse("Page not an integer",status=400)
             except EmptyPage:
                 return HttpResponse("Empty page",status=400)
-            return HttpResponse(page.object_list)
+            resp={}
+            for user in page.object_list:
+                resp['User_'+str(user.id)]={'Email':user.Email,'Role': user.Role,'Created':user.DateCreated,'Updated':user.DateUpdated}
+            return JsonResponse(resp)
         else: 
             return HttpResponse("No permision",status=403)
     else:
