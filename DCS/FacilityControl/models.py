@@ -1,5 +1,5 @@
 from django.db import models
-
+from UserControl.models import User
 # Create your models here.
 class Facility(models.Model):
     UIN = models.CharField(name="UIN",max_length=17,null=False,unique=True)
@@ -21,6 +21,6 @@ class Facility(models.Model):
     NightModeTo = models.TimeField(name="NightModeTo",null=True)
     DateCreated = models.DateField(name='DateCreated',null=False)
     DateUpdated = models.DateField(name='DateUpdated',null=False)
-
+    User = models.OneToOneField(User,to_field='Email',primary_key=False,null=True,name="User",on_delete=models.DO_NOTHING)
     def __str__(self):
         return self.Name
