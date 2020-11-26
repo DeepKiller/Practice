@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from django.core import serializers
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse,JsonResponse
 from django.contrib.auth.password_validation import validate_password,ValidationError
