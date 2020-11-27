@@ -19,5 +19,5 @@ from django.urls import path,include
 urlpatterns = [
     path('facilitycontrol/', include('FacilityControl.urls')),
     path('usercontrol/', include('UserControl.urls')),
-    #path('LogControl/', include('LogControl.urls'))
+    path('logcontrol/', include('LogControl.urls'))
 ]

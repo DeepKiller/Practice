@@ -50,10 +50,10 @@ def Delete(request):
 
 @require_http_methods(['PUT'])
 def Change(request):
+    timezone.activate("Europe/Moscow")
+    now = timezone.now()
     if request.user.is_authenticated:
         if request.user.IsAdmin:
-            timezone.activate("Europe/Moscow")
-            now = timezone.now()
             fields = json.loads(request.body)['fields']
             id = json.loads(request.body)['id']
             facility = Facility.objects.get(id=id)
@@ -79,7 +79,15 @@ def Change(request):
             else:
                 return HttpResponse('Changed, but not applied: '+notapplied)
         else:
-            return HttpResponse("No permision", status=403)
+            fields = json.loads(request.body)
+            facility = Facility.objects.get(User=request.user)
+            atrribs = ('ID','Name','Description','DeviceMode','NetworkMode','LastCO2Value','NightModeEnabled','NightModeAuto','NightModeFrom','NightModeTo')
+            for field,value in fields.items():
+                if hasattr(facility,field) and field in atrribs:
+                    setattr(facility,field,value)
+            setattr(facility,'DateUpdated',now)
+            facility.save()
+            return HttpResponse('Changed')
     else:
         return HttpResponse("Not logged in", status=401)
 
@@ -120,7 +128,25 @@ def View(request):
                     }
             return JsonResponse(resp)
         else: 
-            return HttpResponse("No permision",status=403)
+            if Facility.objects.filter(User=request.user):
+                fac = Facility.objects.get(User=request.user)
+                data = {
+                    'ID':fac.id,
+                    'UIN':fac.UIN,
+                    'Name':fac.Name,
+                    'Description': fac.Description,
+                    'FirmwareVersion':fac.FirmwareVersion,
+                    'DeviceMode':fac.DeviceMode,
+                    'NetworkMode':fac.NetworkMode,
+                    'LastCO2Value':fac.LastCO2Value,
+                    'NightModeEnabled':fac.NightModeEnabled,
+                    'NightModeAuto':fac.NightModeAuto,
+                    'NightModeFrom':fac.NightModeFrom,
+                    'NightModeTo':fac.NightModeTo
+                }
+                return JsonResponse(data)
+            else:
+                return HttpResponse('Facility not setted')
     else:
         return HttpResponse("Not logged in",status=401)
 
