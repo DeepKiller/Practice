@@ -1,15 +1,13 @@
-from django.core import serializers
-from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator,PageNotAnInteger,EmptyPage
 from django.http import HttpResponse,JsonResponse
-from .models import Facility
-from UserControl.models import User
 from string import ascii_letters,digits
 from django.utils import timezone
 from random import choices
 import json
 
+from .models import Facility
+from UserControl.models import User
 # Create your views here.
 @require_http_methods(['POST'])
 def Create(request):
@@ -20,17 +18,19 @@ def Create(request):
             UIN ='zCO2-'+''.join(choices(AllDigits, k=12))
             timezone.activate("Europe/Moscow")
             now = timezone.now()
-            facility = Facility(
-                UIN=UIN,Name=data['Name'],
-                Description=data['Description'],
-                SerialNumber=data['SNum'],
-                FirmwareVersion=data['FVer'],
-                FirmwareLastUpdateDate=now,
-                DateCreated=now,
-                DateUpdated=now
-                )
-            facility.save()
-            return HttpResponse("Created",status=201)
+            try:
+                facility = Facility(
+                    UIN=UIN,Name=data['Name'],
+                    Description=data['Description'],
+                    SerialNumber=data['SNum'],
+                    FirmwareVersion=data['FVer'],
+                    FirmwareLastUpdateDate=now,
+                    DateCreated=now,
+                    DateUpdated=now
+                    ).save()
+                return HttpResponse("Created",status=201)
+            except:
+                return HttpResponse("Bad request",status=400)
         else: 
             return HttpResponse("No permision", status=403)
     else:
@@ -40,9 +40,11 @@ def Create(request):
 def Delete(request):
     if request.user.is_authenticated:
         if request.user.IsAdmin:
-            data = json.loads(request.body)
-            Facility.objects.get(id=data['id']).delete()
-            return HttpResponse("Deleted")
+            try:
+                Facility.objects.get(id=json.loads(request.body)['id']).delete()
+                return HttpResponse("Deleted")
+            except:
+                return HttpResponse("Object not found",status=404)
         else: 
             return HttpResponse("No permision", status=403)
     else:
@@ -156,13 +158,16 @@ def Connect(request):
         if Facility.objects.filter(User=request.user):
             return HttpResponse('Alredy own facility')
         else:
-            fac = Facility.objects.get(UIN=json.loads(request.body)['UIN'])
-            if fac.InUse:
-                return HttpResponse('Alredy in use')
-            else:
-               setattr(fac,'User',request.user)
-               setattr(fac,'InUse',True)
-               fac.save()
-               return HttpResponse('Facility connected')
+            try:
+                fac = Facility.objects.get(UIN=json.loads(request.body)['UIN'])
+                if fac.InUse:
+                    return HttpResponse('Alredy in use')
+                else:
+                   setattr(fac,'User',request.user)
+                   setattr(fac,'InUse',True)
+                   fac.save()
+                   return HttpResponse('Facility connected')
+            except:
+                return HttpResponse('Bad request',status=400)
     else:
         return HttpResponse('Not logged in',status=401)

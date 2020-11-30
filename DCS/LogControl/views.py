@@ -33,13 +33,16 @@ def View(request):
                 return HttpResponse("Page not an integer",status=400)
             except EmptyPage:
                 return HttpResponse("Empty page",status=400)
-            resp={}
-            for log in page.object_list:
-                resp['Log_'+str(log.id)]={
-                    'LogContent':log.LogContent,
-                    'LogDate': log.LogDate
-                    }
-            return JsonResponse(resp)
+            if len(page.object_list)>1:
+                resp={}
+                for log in page.object_list:
+                    resp['Log_'+str(log.id)]={
+                        'LogContent':log.LogContent,
+                        'LogDate': log.LogDate
+                        }
+                return JsonResponse(resp)
+            else:
+                return HttpResponse('No logs')
         else: 
             if request.user.facility.id == data['id']:
                 logs = Log.objects.filter(Facility=Facility.objects.get(id=data['id']))
@@ -50,13 +53,16 @@ def View(request):
                     return HttpResponse("Page not an integer",status=400)
                 except EmptyPage:
                     return HttpResponse("Empty page",status=400)
-                resp={}
-                for log in page.object_list:
-                    resp['Log_'+str(log.id)]={
-                        'LogContent':log.LogContent,
-                        'LogDate': log.LogDate
-                        }
-                return JsonResponse(resp)
+                if len(page.object_list)>1:
+                    resp={}
+                    for log in page.object_list:
+                        resp['Log_'+str(log.id)]={
+                            'LogContent':log.LogContent,
+                            'LogDate': log.LogDate
+                            }
+                    return JsonResponse(resp)
+                else:
+                    return HttpResponse("No logs")
             else:
                 return HttpResponse('Not your facility',status=400)
     else:
@@ -66,8 +72,7 @@ def View(request):
 def Delete(request):
     if request.user.is_authenticated:
         if request.user.IsAdmin:
-            data = json.loads(request.body)
-            Log.objects.filter(Facility=Facility.objects.get(id=data['id'])).delete()
+            Log.objects.filter(Facility=Facility.objects.get(id=json.loads(request.body)['id'])).delete()
             return HttpResponse("Deleted")
         else: 
             return HttpResponse("No permision", status=403)
