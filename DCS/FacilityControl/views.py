@@ -11,6 +11,14 @@ from UserControl.models import User
 # Create your views here.
 @require_http_methods(['POST'])
 def Create(request):
+    """
+    Description: Метод создания новой установки из полученных данных.
+    Args: request - запрос пользователя с методом POST, содержащий в себе: 
+    Name - название, 
+    Description - описание, 
+    SerialNumber - серийный номер, 
+    FirmwareVersion - версия прошивки.
+    """
     if request.user.is_authenticated:
         if request.user.IsAdmin:
             data = json.loads(request.body)
@@ -22,8 +30,8 @@ def Create(request):
                 facility = Facility(
                     UIN=UIN,Name=data['Name'],
                     Description=data['Description'],
-                    SerialNumber=data['SNum'],
-                    FirmwareVersion=data['FVer'],
+                    SerialNumber=data['SerialNumber'],
+                    FirmwareVersion=data['FirmwareVersion'],
                     FirmwareLastUpdateDate=now,
                     DateCreated=now,
                     DateUpdated=now
@@ -38,6 +46,10 @@ def Create(request):
 
 @require_http_methods(['DELETE'])
 def Delete(request):
+    """
+    Description: Удаляет установку с помощью полученных в запросе данных.
+    Args: request - запрос от клиента с методом DELETE содержащий в себе id установки для удаления.
+    """
     if request.user.is_authenticated:
         if request.user.IsAdmin:
             try:
@@ -52,6 +64,10 @@ def Delete(request):
 
 @require_http_methods(['PUT'])
 def Change(request):
+    """
+    Description: Метод изменения установки
+    Args: request - запрос от клиента с методом PUT содержащий id установки для изменения и поля для изменения.
+    """
     timezone.activate("Europe/Moscow")
     now = timezone.now()
     if request.user.is_authenticated:
@@ -83,7 +99,7 @@ def Change(request):
         else:
             fields = json.loads(request.body)
             facility = Facility.objects.get(User=request.user)
-            atrribs = ('ID','Name','Description','DeviceMode','NetworkMode','LastCO2Value','NightModeEnabled','NightModeAuto','NightModeFrom','NightModeTo')
+            atrribs = ('id','Name','Description','DeviceMode','NetworkMode','LastCO2Value','NightModeEnabled','NightModeAuto','NightModeFrom','NightModeTo')
             for field,value in fields.items():
                 if hasattr(facility,field) and field in atrribs:
                     setattr(facility,field,value)
@@ -95,6 +111,10 @@ def Change(request):
 
 @require_http_methods(['GET'])
 def View(request):
+    """
+    Description: Отображает список установок на указанной странице. Для администратора для запрошенной установки, для пользователя для привязанной.
+    Args: request - запрос от клиента с методом GET содержащий в себе page (номер необходимой страницы).
+    """
     if request.user.is_authenticated:
         if request.user.IsAdmin:
             facs = Facility.objects.all().order_by('id')
@@ -154,6 +174,10 @@ def View(request):
 
 @require_http_methods(['PUT'])
 def Connect(request):
+    """
+    Description: Метод подключения установки.
+    Args: request - запрос с методом PUT, содержащий UIN установки.
+    """
     if request.user.is_authenticated:
         if Facility.objects.filter(User=request.user):
             return HttpResponse('Alredy own facility')

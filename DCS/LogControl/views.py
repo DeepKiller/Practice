@@ -9,6 +9,10 @@ from FacilityControl.models import Facility
 # Create your views here.
 @require_http_methods(['POST'])
 def Create(request):
+    """
+    Description: Создаёт новый лог из полученных данных.
+    Args:  request - запрос от клиента с методом POST содержащий в себе id установки и LogContent - содержимое лога.
+    """
     if request.user.is_authenticated:
         data = json.loads(request.body)
         if request.user.facility.id == data['id']:
@@ -22,6 +26,10 @@ def Create(request):
 
 @require_http_methods(['GET'])
 def View(request):
+    """
+    Description: Отображает список логов на указанной странице. Для администратора для запрошенной установки, для пользователя для привязанной.
+    Args: request - запрос от клиента с методом GET содержащий в себе page (номер необходимой страницы).
+    """
     data = json.loads(request.body)
     if request.user.is_authenticated:
         if request.user.IsAdmin:
@@ -70,6 +78,10 @@ def View(request):
 
 @require_http_methods(['DELETE'])
 def Delete(request):
+    """
+    Description: Удаляет логи с помощью полученных в запросе данных.
+    Args: request - запрос от клиента с методом DELETE содержащий в себе id установки для удаления логов.
+    """
     if request.user.is_authenticated:
         if request.user.IsAdmin:
             Log.objects.filter(Facility=Facility.objects.get(id=json.loads(request.body)['id'])).delete()
