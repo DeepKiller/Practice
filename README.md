@@ -1,10 +1,29 @@
 # Состав:
 
 ## DCS - Директория проекта:
-	* UserControl - приложение для взаимодействия с пользователями:
-		
-	* FacilityControl - приложение для взаимодействия с установками.
-	* LogControl - приложение для управления логами.
+	### UserControl - приложение для взаимодействия с пользователями:
+Endpoint|Метод|Аргументы|Описание|Необходимая роль
+:---:|:---:|:---:|:---:|:---:
+/usercontrol/registration|POST|Email,Password - string|Регистрация нового пользователя|NONE
+/usercontrol/login|POST|Email,Password - string|Вход в учётную запись|NONE
+/usercontrol/delete|DELETE|Email - string|Удаление указанного пользователя|Admin
+/usercontrol/view|GET|page - integer|Отображение списка пользователей на указанной странице|Admin
+
+	### FacilityControl - приложение для взаимодействия с установками:
+Endpoint|Метод|Аргументы|Описание|Необходимая роль
+:---:|:---:|:---:|:---:|:---:
+/facilitycontrol/create|POST|Name, Description, SerialNumber - string, FirmwareVersion - Float|Создание установки|Admin
+/facilitycontrol/delete|DELETE|id - integer|Удаление установки|Admin
+/facilitycontrol/view|GET|page - integer|Отображение списка установок|Admin
+/facilitycontrol/connect|PUT|UIN - string|Подключение установки|ALL
+/facilitycontrol/change|PUT|Name, UIN, Description, DeviceMode, NetworkMode - string, LastCO2Value - float, NightModeEnabled, NightModeAuto - bool,NightModeFrom, NightModeTo - time|Изменение привязанной установки|User
+/facilitycontrol/change|PUT|id - integer, fields - array|Изменяет указанные поля, у указанной установки|Admin
+	### LogControl - приложение для управления логами:
+Endpoint|Метод|Аргументы|Описание|Необходимая роль
+:---:|:---:|:---:|:---:|:---:
+/logcontrol/create|POST| id - integer, logcontent - string|Добавляет лог для указанной установки|User
+/logcontrol/view|GET|page - integer, id - integer(Only Admin)|Отображает список логов на указанной странице. Для администратора для запрошенной установки, для пользователя для привязанной.|ALL
+/logcontrol/delete|DELETE|id - integer|Удаляет логия для указанной установки|Admin
 ## SUU - Директория виртуальной среды.
 
 # Развёртывание:
